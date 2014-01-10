@@ -26,7 +26,8 @@
         <iconUrl>http://clarius.io/clide-48x48</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Common targets to create version-aware Visual Studio extensions easily.</description>
-        <releaseNotes>
+        <releaseNotes>Release Notes:
+
 v1.0
 
 * Provides the following MSBuild properties for version-aware projects:
@@ -38,9 +39,7 @@ v1.0
 	* VSSDK: the [VSSDK install directory]\VisualStudioIntegration\Common\Assemblies\ folder. Can be overriden.
 	* VSSDK20: $(VSSDK)v2.0\
 	* VSSDK40: $(VSSDK)v4.0\
-	* VSToolsPath: path to the MSBuild targets for the VSSDK
-
-</releaseNotes>
+	* VSToolsPath: path to the MSBuild targets for the VSSDK</releaseNotes>
         <copyright>Copyright 2014</copyright>
         <tags>visualstudio vsx extensibility</tags>
     </metadata>

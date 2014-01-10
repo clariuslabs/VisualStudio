@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<!--
+   Copyright 2014 Clarius Consulting SA
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<package>
+    <metadata>
+        <id>Clarius.VisualStudio</id>
+        <version>1.0</version>
+        <title>Clarius Visual Studio Targets</title>
+        <authors>Daniel Cazzulino</authors>
+        <owners>clariuslabs, danielkzu</owners>
+        <licenseUrl>https://github.com/clariuslabs/VisualStudio/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/clariuslabs/VisualStudio</projectUrl>
+        <iconUrl>http://clarius.io/clide-48x48</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Common targets to create version-aware Visual Studio extensions easily.</description>
+        <releaseNotes>
+v1.0
+
+* Provides the following MSBuild properties for version-aware projects:
+	* VisualStudioVersion: for VS2010, sets it to '10.0'
+	* MinimumVisualStudioVersion: equals VisualStudioVersion to allow opening on any version
+	* DevEnvDir: if it's empty, for safe command-line building. Can be overriden.
+	* PublicAssemblies: $(DevEnvDir)\PublicAssemblies\
+	* PrivateAssemblies: $(DevEnvDir)\PrivateAssemblies\
+	* VSSDK: the [VSSDK install directory]\VisualStudioIntegration\Common\Assemblies\ folder. Can be overriden.
+	* VSSDK20: $(VSSDK)v2.0\
+	* VSSDK40: $(VSSDK)v4.0\
+	* VSToolsPath: path to the MSBuild targets for the VSSDK
+
+</releaseNotes>
+        <copyright>Copyright 2014</copyright>
+        <tags>visualstudio vsx extensibility</tags>
+    </metadata>
+</package>

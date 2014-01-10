@@ -1,4 +1,4 @@
-![Icon](https://raw.github.com/clariuslabs/VisualStudio/master/icon/32.png) VisualStudio
+![Icon](https://raw.github.com/clariuslabs/VisualStudio/master/icon/32.png) VisualStudio Targets
 ============
 
 Contains MSBuild targets that are useful when developing Visual Studio extensions

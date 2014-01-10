@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2014 Clarius Consulting SA
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+		<DefineConstants>$(DefineConstants);VS$(VisualStudioVersion.Replace('.', ''))</DefineConstants>
+	</PropertyGroup>
+
+	<!-- This is the property that causes VS 2012+ to insist on one-way update of the project -->
+	<PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '11.0'">
+		<MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
+	</PropertyGroup>
+	<!-- This is an additional property added by VS 2013 -->
+	<PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '12.0'">
+		<OldToolsVersion>4.0</OldToolsVersion>
+	</PropertyGroup>
+
+	<!-- VSSDK directories setup -->
+	<PropertyGroup Condition="'$(VSSDK)' == ''">
+		<VSSDKVar>VSSDK$(VisualStudioVersion.Replace('.', ''))Install</VSSDKVar>
+		<VSSDK>$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
+	</PropertyGroup>
+	<PropertyGroup>
+		<VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>
+		<VSSDK40>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v4.0\</VSSDK40>
+		<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+	</PropertyGroup>
+
+	<!-- On build servers and command line, this property is not available, so we redefine it in 
+             terms of the environment variables created by VS when installed -->
+	<PropertyGroup Condition="'$(DevEnvDir)' == ''">
+		<VSCommToolsVar>VS$(VisualStudioVersion.Replace('.', ''))COMNTOOLS</VSCommToolsVar>
+		<DevEnvDir>$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PublicAssemblies>$(DevEnvDir)PublicAssemblies\</PublicAssemblies>
+		<PrivateAssemblies>$(DevEnvDir)PublicAssemblies\</PrivateAssemblies>
+	</PropertyGroup>
+
+</Project>

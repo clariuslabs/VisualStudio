@@ -23,7 +23,7 @@
         <owners>clariuslabs, danielkzu</owners>
         <licenseUrl>https://github.com/clariuslabs/VisualStudio/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/clariuslabs/VisualStudio</projectUrl>
-        <iconUrl>http://clarius.io/clide-48x48</iconUrl>
+        <iconUrl>https://raw2.github.com/clariuslabs/VisualStudio/master/icon/48.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Common targets to create version-aware Visual Studio extensions easily.</description>
         <releaseNotes>Release Notes:

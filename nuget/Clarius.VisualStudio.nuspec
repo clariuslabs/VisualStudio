@@ -41,6 +41,6 @@ v1.0
 	* VSSDK40: $(VSSDK)v4.0\
 	* VSToolsPath: path to the MSBuild targets for the VSSDK</releaseNotes>
         <copyright>Copyright 2014</copyright>
-        <tags>visualstudio vsx extensibility</tags>
+        <tags>visualstudio vsx extensibility clariuslabs</tags>
     </metadata>
 </package>

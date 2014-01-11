@@ -36,7 +36,7 @@
 		
     <Target Name="Build" DependsOnTargets="BuildNuGet" />
 
-	<Target Name="BuildNuGet" Inputs="@(NuSpec)" Outputs="%(Identity)-BATCH" DependsOnTargets="RestorePackages">
+	<Target Name="BuildNuGet" Inputs="@(NuSpec)" Outputs="%(Identity)-BATCH" DependsOnTargets="_DownloadNuGet;RestorePackages">
 		<PropertyGroup>
 			<ReadmePath>%(NuSpec.RootDir)%(NuSpec.Directory)Readme.txt</ReadmePath>
 			<Readme Condition="Exists('$(ReadmePath)')">$([System.IO.File]::ReadAllText('$(ReadmePath)'))</Readme>
@@ -59,7 +59,7 @@
               ContinueOnError="false" />
 	</Target>
 
-	<Target Name="RestorePackages" Condition="'@(PackageConfig)' != ''" DependsOnTargets="_DownloadNuGet">
+	<Target Name="RestorePackages" Condition="'@(PackageConfig)' != ''">
 		<Message Text="Restoring NuGet packages..." Importance="High" />
 		<Exec Command="$(nuget) restore %(PackageConfig.FullPath) -NonInteractive -Verbosity quiet" />
 	</Target>

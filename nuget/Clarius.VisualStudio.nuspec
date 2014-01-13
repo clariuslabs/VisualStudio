@@ -18,12 +18,12 @@
     <metadata>
         <id>Clarius.VisualStudio</id>
         <version>1.0</version>
-        <title>Clarius Visual Studio Targets</title>
+        <title>Visual Studio Targets</title>
         <authors>Daniel Cazzulino</authors>
         <owners>clariuslabs, danielkzu</owners>
         <licenseUrl>https://github.com/clariuslabs/VisualStudio/blob/master/LICENSE</licenseUrl>
         <projectUrl>https://github.com/clariuslabs/VisualStudio</projectUrl>
-        <iconUrl>https://raw2.github.com/clariuslabs/VisualStudio/master/icon/48.png</iconUrl>
+        <iconUrl>https://raw2.github.com/clariuslabs/VisualStudio/master/icon/128.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Common targets to create version-aware Visual Studio extensions easily.</description>
         <releaseNotes>Release Notes:

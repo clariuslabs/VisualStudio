@@ -27,3 +27,16 @@ PM> Install-Package Clarius.VisualStudio
 
 
 Icon [Infinity](http://thenounproject.com/term/infinity/9992/) by Cengiz SARI from [The Noun Project](http://thenounproject.com/).
+
+
+
+
+[![Build Status](https://www.myget.org/BuildSource/Badge/clarius?identifier=97a997db-cde0-4f12-9d5f-a7e86b682873 "Build Status")](https://www.myget.org/gallery/clarius)
+====================
+This project is sponsored by Clarius Labs
+
+[![Clarius Labs][2]][1]
+
+
+  [1]: http://clariuslabs.github.io/
+  [2]: http://clariuslabs.github.io/media/clariuslabs.png (Clarius Labs Logo)

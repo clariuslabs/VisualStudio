@@ -14,7 +14,15 @@ Contains MSBuild targets that are useful when developing Visual Studio extension
   * `VSSDK40`: $(VSSDK)v4.0\
   * `VSToolsPath`: path to the MSBuild targets for the VSSDK
 
-See the [readme](https://github.com/clariuslabs/VisualStudio/blob/master/nuget/Readme.txt) for the latest updates.
+* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
+	* Supports <Include> metadata to add shared artifacts to the generated ZIP files
+	* Does not regenerate ZIP files if content didn't change
+	* Supports linked files that are copied to the output directory
+
+
+More in-depth tutorials on using this project is available in the [wiki](https://github.com/clariuslabs/VisualStudio/wiki).
+
+See the [readme](https://github.com/clariuslabs/VisualStudio/blob/master/nuget/Readme.txt) for the latest change log.
 
 ## Installation
 

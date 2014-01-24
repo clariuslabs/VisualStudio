@@ -1,4 +1,11 @@
 Release Notes:
+v1.1
+* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
+	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files
+	* Does not regenerate ZIP files if content didn't change
+	* Supports linked files that are copied to the output directory
+* Sets up the project to always start by running devenv.exe in the experimental 
+  instance and with logging enabled for easy error diagnostics.
 
 v1.0
 

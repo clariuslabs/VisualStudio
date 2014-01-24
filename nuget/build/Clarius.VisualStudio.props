@@ -53,4 +53,10 @@
 		<PrivateAssemblies>$(DevEnvDir)PublicAssemblies\</PrivateAssemblies>
 	</PropertyGroup>
 
+	<!-- Set startup process to always start with the experimental instance and logging enabled -->
+	<PropertyGroup>
+		<StartAction>Program</StartAction>
+		<StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
+		<StartArguments>/rootSuffix Exp</StartArguments>
+	</PropertyGroup>
 </Project>

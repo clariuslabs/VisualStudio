@@ -15,18 +15,25 @@
    limitations under the License.
 -->
 <package>
-    <metadata>
-        <id>Clarius.VisualStudio</id>
-        <version>1.0</version>
-        <title>Visual Studio Targets</title>
-        <authors>Daniel Cazzulino</authors>
-        <owners>clariuslabs, danielkzu</owners>
-        <licenseUrl>https://github.com/clariuslabs/VisualStudio/blob/master/LICENSE</licenseUrl>
-        <projectUrl>https://github.com/clariuslabs/VisualStudio</projectUrl>
-        <iconUrl>https://raw2.github.com/clariuslabs/VisualStudio/master/icon/128.png</iconUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Common targets to create version-aware Visual Studio extensions easily.</description>
-        <releaseNotes>Release Notes:
+  <metadata>
+    <id>Clarius.VisualStudio</id>
+    <version>1.0</version>
+    <title>Visual Studio Targets</title>
+    <authors>Daniel Cazzulino</authors>
+    <owners>clariuslabs, danielkzu</owners>
+    <licenseUrl>https://github.com/clariuslabs/VisualStudio/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/clariuslabs/VisualStudio</projectUrl>
+    <iconUrl>https://raw2.github.com/clariuslabs/VisualStudio/master/icon/128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Common targets to create version-aware Visual Studio extensions easily.</description>
+    <releaseNotes>Release Notes:
+v1.1
+* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
+	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files
+	* Does not regenerate ZIP files if content didn't change
+	* Supports linked files that are copied to the output directory
+* Sets up the project to always start by running devenv.exe in the experimental 
+  instance and with logging enabled for easy error diagnostics.
 
 v1.0
 
@@ -40,7 +47,7 @@ v1.0
 	* VSSDK20: $(VSSDK)v2.0\
 	* VSSDK40: $(VSSDK)v4.0\
 	* VSToolsPath: path to the MSBuild targets for the VSSDK</releaseNotes>
-        <copyright>Copyright 2014</copyright>
-        <tags>visualstudio vsx extensibility clariuslabs</tags>
-    </metadata>
+    <copyright>Copyright 2014</copyright>
+    <tags>visualstudio vsx extensibility clariuslabs</tags>
+  </metadata>
 </package>

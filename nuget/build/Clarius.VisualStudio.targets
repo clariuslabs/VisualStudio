@@ -20,4 +20,189 @@
 	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" 
 			Condition="'$(VsSDKVersion)' == '' And '$(VSToolsPath)' != ''" />
 
+	<PropertyGroup>
+		<!-- Before compilation is done, we add our content files from smart templates -->
+		<PrepareForBuildDependsOn>
+			$(PrepareForBuildDependsOn);
+			IncludeSmartTemplateFiles;
+			IncludeSmartTemplateIncludes
+		</PrepareForBuildDependsOn>
+		<!-- Before extension is deployed or VSIX built, we zip templates -->
+		<GetVsixSourceItemsDependsOn>
+			$(GetVsixSourceItemsDependsOn);
+			ZipSmartTemplateContent;
+			AddSmartTemplateZip
+		</GetVsixSourceItemsDependsOn>
+	</PropertyGroup>
+
+
+	<ItemGroup>
+		<!-- If we don't make these invisible, they show up in VS as missing files :S -->
+		<AvailableItemName Include="SmartVSTemplate">
+			<Visible>False</Visible>
+		</AvailableItemName>
+	</ItemGroup>
+
+	<!--
+    =======================================================================================================
+                                    Include all files including the .vstemplate
+    =======================================================================================================
+	-->
+	<Target Name="IncludeSmartTemplateFiles" Condition="'@(SmartVSTemplate)' != ''">
+		<ItemGroup>
+			<Content Include="%(SmartVSTemplate.RelativeDir)**\*.*">
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</Content>
+		</ItemGroup>
+	</Target>
+
+	<!--
+    =======================================================================================================
+							Include files added via semicolon-delimited <Include> metadata
+    =======================================================================================================
+	-->
+	<Target Name="IncludeSmartTemplateIncludes" Condition="'@(SmartVSTemplate)' != ''">
+		<!-- Splits by semicolon the Includes metadata of the template and generates one item for each -->
+		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(Include)' != ''">
+			<Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
+		</SplitTemplateIncludes>
+
+		<!-- Causes the wildcards to be resolved to generate one item per file -->
+		<CreateItem Include="@(_SmartTemplateInclude)" PreserveExistingMetadata="true">
+			<Output TaskParameter="Include" ItemName="_SmartIncludedFileSource" />
+		</CreateItem>
+
+		<!-- Calculates the relative target path for each item under the target template directory -->
+		<GetIncludeTargetPaths Sources="@(_SmartIncludedFileSource)">
+			<Output TaskParameter="Targets" ItemName="_SmartIncludedFileRelativeTarget" />
+		</GetIncludeTargetPaths>
+
+		<!-- Generate standard content includes with links and copy to output -->
+		<ItemGroup>
+			<Content Include="@(_SmartIncludedFileRelativeTarget)">
+				<Link>%(_SmartIncludedFileRelativeTarget.Link)</Link>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</Content>
+		</ItemGroup>
+	</Target>
+
+	<!--
+    =======================================================================================================
+                                       Zip the intermediate content, if changed
+    =======================================================================================================
+    -->
+	<Target Name="ZipSmartTemplateContent" Condition="'@(SmartVSTemplate)' != ''">
+		<ItemGroup>
+			<_SmartTemplateContent Include="$(TargetDir)%(SmartVSTemplate.RelativeDir)**\*.*">
+				<TemplateDir>$([System.IO.Directory]::GetParent($(TargetDir)%(SmartVSTemplate.RelativeDir)).FullName)\</TemplateDir>
+				<ZipFile>$([System.IO.Directory]::GetParent($(TargetDir)%(SmartVSTemplate.RelativeDir)).Parent.FullName)\%(SmartVSTemplate.Filename).zip</ZipFile>
+			</_SmartTemplateContent>
+		</ItemGroup>
+
+		<!--
+			The following VSSDK built-in task takes care of zipping a template. It doesn't do any pre or post-processing 
+			of the .vstemplate, which is exactly what we want as we may have links, etc. This is the opposite of what 
+			the built-in VSTemplate build action does, which mangles everything and breaks badly with linked files, 
+			multi-project templates, etc.
+			
+			It doesn't re-zip if files haven't changed also.
+		-->
+		<ZipItems Files="@(_SmartTemplateContent)" Action="New" ProjectPath="$(TargetDir)" RootPath="%(_SmartTemplateContent.TemplateDir)" ZipFile="%(_SmartTemplateContent.ZipFile)">
+			<Output TaskParameter="ZipFile" ItemName="_SmartTemplateZip" />
+		</ZipItems>
+	</Target>
+
+	<!--
+    =======================================================================================================
+                                       Add as content to be included in the VSIX
+    =======================================================================================================
+    -->
+	<Target Name="AddSmartTemplateZip">
+		<ItemGroup>
+			<Content Include="@(_SmartTemplateZip)">
+				<!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->
+				<Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(TargetDir), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
+				<IncludeInVSIX>true</IncludeInVSIX>
+				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			</Content>
+		</ItemGroup>
+	</Target>
+
+	<!--
+    =======================================================================================================
+                                       Task that splits the <Include> metadata
+    =======================================================================================================
+    -->
+	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+			<Includes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.IO" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+var templateDir = this.Template.GetMetadata("RootDir") + this.Template.GetMetadata("Directory");
+var templateRelativeDir = this.Template.GetMetadata("RelativeDir");
+var templateInclude = this.Template.GetMetadata("Include") ?? "";
+this.Includes = templateInclude
+					.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+					.Select(include => new TaskItem(Path.Combine(templateDir, include), new Dictionary<string, string>
+					{
+						{ "TemplateDir", templateDir },
+						{ "TemplateRelativeDir", templateRelativeDir },
+						{ "BaseDir", include.IndexOf("**") != -1 ?
+								// We have a relative dir in the path.
+								new DirectoryInfo(Path.Combine(templateDir, include.Substring(0, include.IndexOf("**")))).FullName :
+								// We don't have relative dirs, so just pick the path.
+								new DirectoryInfo(Path.Combine(templateDir, include.Substring(0, include.LastIndexOf(@"\") + 1))).FullName
+						}
+					}))
+					.ToArray();
+]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<!--
+    =======================================================================================================
+                                     Task that calculates the target relative paths
+    =======================================================================================================
+    -->
+	<UsingTask TaskName="GetIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<Sources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+			<Targets ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.IO" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+foreach(var item in this.Sources)
+{
+	item.SetMetadata("Link", 
+		Path.Combine(item.GetMetadata("TemplateRelativeDir"), 
+			new FileInfo(item.GetMetadata("FullPath"))
+				.FullName.Replace(item.GetMetadata("BaseDir"), "")
+		));
+}
+
+this.Targets = this.Sources
+					.Select(source => new TaskItem(
+						Path.Combine(
+							source.GetMetadata("TemplateRelativeDir"), 
+							new FileInfo(source.GetMetadata("FullPath"))
+								.FullName
+								.Replace(source.GetMetadata("BaseDir"), "")
+							)
+						)
+					)
+					.ToArray();
+					
+this.Targets = this.Sources;
+]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
 </Project>

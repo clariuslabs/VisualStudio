@@ -117,7 +117,7 @@
                                        Add as content to be included in the VSIX
     =======================================================================================================
     -->
-	<Target Name="AddSmartTemplateZip">
+	<Target Name="AddSmartTemplateZip" Condition="'@(SmartVSTemplate)' != ''">
 		<ItemGroup>
 			<Content Include="@(_SmartTemplateZip)">
 				<!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->

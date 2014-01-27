@@ -63,7 +63,7 @@
 	-->
 	<Target Name="IncludeSmartTemplateIncludes" Condition="'@(SmartVSTemplate)' != ''">
 		<!-- Splits by semicolon the Includes metadata of the template and generates one item for each -->
-		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(Include)' != ''">
+		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(SmartVSTemplate.Include)' != ''">
 			<Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
 		</SplitTemplateIncludes>
 

@@ -21,18 +21,23 @@
 			Condition="'$(VsSDKVersion)' == '' And '$(VSToolsPath)' != ''" />
 
 	<PropertyGroup>
-		<!-- Before compilation is done, we add our content files from smart templates -->
+        <!-- This makes it easy to change it to be $(TargetPath) instead -->
+        <SmartTemplateIntermediateOutputPath Condition="'$(SmartTemplateIntermediateOutputPath)' == ''">$(IntermediateOutputPath)</SmartTemplateIntermediateOutputPath>
+        <SmartTemplateIntermediateOutputFullPath>$([MSBuild]::Escape($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(SmartTemplateIntermediateOutputPath)'))'))))</SmartTemplateIntermediateOutputFullPath>
+
+        <!-- Before compilation is done, we add our content files from smart templates -->
 		<PrepareForBuildDependsOn>
 			$(PrepareForBuildDependsOn);
 			IncludeSmartTemplateFiles;
 			IncludeSmartTemplateIncludes
 		</PrepareForBuildDependsOn>
 		<!-- Before extension is deployed or VSIX built, we zip templates -->
-		<GetVsixSourceItemsDependsOn>
-			$(GetVsixSourceItemsDependsOn);
-			ZipSmartTemplateContent;
-			AddSmartTemplateZip
-		</GetVsixSourceItemsDependsOn>
+        <AssignTargetPathsDependsOn>
+            CopyOutOfDateSmartTemplateContent;
+            ZipSmartTemplateContent;
+            AddSmartTemplateZip;
+            $(AssignTargetPathsDependsOn)
+        </AssignTargetPathsDependsOn>
 	</PropertyGroup>
 
 
@@ -42,19 +47,23 @@
 			<Visible>False</Visible>
 		</AvailableItemName>
 	</ItemGroup>
-
+	
 	<!--
     =======================================================================================================
                                     Include all files including the .vstemplate
     =======================================================================================================
 	-->
 	<Target Name="IncludeSmartTemplateFiles" Condition="'@(SmartVSTemplate)' != ''">
-		<ItemGroup>
-			<Content Include="%(SmartVSTemplate.RelativeDir)**\*.*">
-				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			</Content>
-		</ItemGroup>
-	</Target>
+        <!-- Causes the wildcards to be resolved to generate one item per file -->
+        <CreateItem Include="%(SmartVSTemplate.RelativeDir)**\*.*">
+            <Output TaskParameter="Include" ItemName="_SmartTemplateRelativeFile" />
+        </CreateItem>
+
+        <!-- Leverage built-in task to assign TargetPath metadata -->
+        <AssignTargetPath Files="@(_SmartTemplateRelativeFile)" RootFolder="$(MSBuildProjectDirectory)">
+            <Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />
+        </AssignTargetPath>
+    </Target>
 
 	<!--
     =======================================================================================================
@@ -78,31 +87,49 @@
 		</CreateItem>
 
 		<!-- Calculates the relative target path for each item under the target template directory -->
-		<GetIncludeTargetPaths Sources="@(_SmartIncludedFileSource)">
-			<Output TaskParameter="Targets" ItemName="_SmartIncludedFileRelativeTarget" />
-		</GetIncludeTargetPaths>
-
-		<!-- Generate standard content includes with links and copy to output -->
-		<ItemGroup>
-			<Content Include="@(_SmartIncludedFileRelativeTarget)">
-				<Link>%(_SmartIncludedFileRelativeTarget.Link)</Link>
-				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			</Content>
-		</ItemGroup>
+		<AssignIncludeTargetPaths Files="@(_SmartIncludedFileSource)">
+			<Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />
+		</AssignIncludeTargetPaths>
 	</Target>
 
-	<!--
+    <!--
+    =======================================================================================================
+							Copies out of date template content (included or direct)
+                            to the $(SmartTemplateIntermediateOutputPath) prior to zipping
+    =======================================================================================================
+	-->
+    <Target
+        Name="CopyOutOfDateSmartTemplateContent"
+        Condition="'@(SmartTemplateContentWithTargetPath)' != ''"
+        Inputs="@(SmartTemplateContentWithTargetPath)"
+        Outputs="@(SmartTemplateContentWithTargetPath->'$(SmartTemplateIntermediateOutputPath)%(TargetPath)')">
+
+        <Copy
+            SourceFiles="@(SmartTemplateContentWithTargetPath)"
+            DestinationFiles="@(SmartTemplateContentWithTargetPath->'$(SmartTemplateIntermediateOutputPath)%(TargetPath)')"
+            OverwriteReadOnlyFiles="true"
+            Retries="$(CopyRetryCount)"
+            RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+            SkipUnchangedFiles="true">
+            <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+        </Copy>
+
+    </Target>
+
+
+    <!--
     =======================================================================================================
                                        Zip the intermediate content, if changed
     =======================================================================================================
     -->
 	<Target Name="ZipSmartTemplateContent" Condition="'@(SmartVSTemplate)' != ''">
+        
 		<ItemGroup>
-			<_SmartTemplateContent Include="$(TargetDir)%(SmartVSTemplate.RelativeDir)**\*.*">
-				<TemplateDir>$([System.IO.Directory]::GetParent($(TargetDir)%(SmartVSTemplate.RelativeDir)).FullName)\</TemplateDir>
-				<ZipFile>$([System.IO.Directory]::GetParent($(TargetDir)%(SmartVSTemplate.RelativeDir)).Parent.FullName)\%(SmartVSTemplate.Filename).zip</ZipFile>
-			</_SmartTemplateContent>
-		</ItemGroup>
+            <_SmartTemplateContent Include="$(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)**\*.*">
+                <ZipRootDir>$([System.IO.Directory]::GetParent($(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)).FullName)\</ZipRootDir>
+                <ZipFile>$([System.IO.Directory]::GetParent($(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)).Parent.FullName)\%(SmartVSTemplate.Filename).zip</ZipFile>
+            </_SmartTemplateContent>
+        </ItemGroup>
 
 		<!--
 			The following VSSDK built-in task takes care of zipping a template. It doesn't do any pre or post-processing 
@@ -112,9 +139,13 @@
 			
 			It doesn't re-zip if files haven't changed also.
 		-->
-		<ZipItems Files="@(_SmartTemplateContent)" Action="New" ProjectPath="$(TargetDir)" RootPath="%(_SmartTemplateContent.TemplateDir)" ZipFile="%(_SmartTemplateContent.ZipFile)">
+		<ZipItems Files="@(_SmartTemplateContent)" 
+                  Action="New" 
+                  ProjectPath="$(SmartTemplateIntermediateOutputFullPath)" 
+                  RootPath="%(_SmartTemplateContent.ZipRootDir)" 
+                  ZipFile="%(_SmartTemplateContent.ZipFile)">
 			<Output TaskParameter="ZipFile" ItemName="_SmartTemplateZip" />
-		</ZipItems>
+		</ZipItems>        
 	</Target>
 
 	<!--
@@ -126,7 +157,7 @@
 		<ItemGroup>
 			<Content Include="@(_SmartTemplateZip)">
 				<!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->
-				<Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(TargetDir), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
+				<Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(SmartTemplateIntermediateOutputFullPath), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
 				<IncludeInVSIX>true</IncludeInVSIX>
 				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			</Content>
@@ -136,6 +167,31 @@
 	<!--
     =======================================================================================================
                                        Task that splits the <Include> metadata
+
+    If a template contains the following metadata:
+    
+        <SmartVSTemplate Include="\T\PT\MyApp\MyApp.vstemplate">
+            <Include>..\..\Shared\Common\**\*.*;..\..\Shared\CSharp\**\*.*</Include>
+        </SmartVSTemplate>
+    
+    This task will generate as output the following two items>
+
+      <Item Include="..\..\Shared\Common\**\*.*">
+        <TemplateDir>\T\PT\MyApp\</TemplateDir>
+        <TemplateParentDir>\T\PT\</TemplateParentDir>
+        <TemplateZip>MyApp.zip</TemplateZip>
+        <IncludedDir>..\..\Shared\Common\</IncludedDir>
+      </Item>
+      <Item Include="..\..\Shared\CSharp\**\*.*"
+        <TemplateDir>\T\PT\MyApp\</TemplateDir>
+        <TemplateZip>MyApp.zip</TemplateZip>
+        <IncludedDir>..\..\Shared\CSharp\</IncludedDir>
+      </Item>
+    
+    This allows the consuming target to force the wildcards to be resolved and obtain 
+    a final list of items to include, as well as preserve the originating template 
+    directory and ultimate target zip file that will contain the items.
+
     =======================================================================================================
     -->
 	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
@@ -147,20 +203,19 @@
 			<Using Namespace="System.IO" />
 			<Code Type="Fragment" Language="cs">
 				<![CDATA[
-var templateDir = this.Template.GetMetadata("RootDir") + this.Template.GetMetadata("Directory");
+var templateFullDir = this.Template.GetMetadata("RootDir") + this.Template.GetMetadata("Directory");
 var templateRelativeDir = this.Template.GetMetadata("RelativeDir");
 var templateInclude = this.Template.GetMetadata("Include") ?? "";
 this.Includes = templateInclude
 					.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
-					.Select(include => new TaskItem(Path.Combine(templateDir, include), new Dictionary<string, string>
+					.Select(include => new TaskItem(Path.Combine(templateFullDir, include), new Dictionary<string, string>
 					{
-						{ "TemplateDir", templateDir },
-						{ "TemplateRelativeDir", templateRelativeDir },
-						{ "BaseDir", include.IndexOf("**") != -1 ?
+						{ "TemplateDir", templateRelativeDir },
+						{ "IncludedDir", include.IndexOf("**") != -1 ?
 								// We have a relative dir in the path.
-								new DirectoryInfo(Path.Combine(templateDir, include.Substring(0, include.IndexOf("**")))).FullName :
+								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.IndexOf("**")))).FullName :
 								// We don't have relative dirs, so just pick the path.
-								new DirectoryInfo(Path.Combine(templateDir, include.Substring(0, include.LastIndexOf(@"\") + 1))).FullName
+								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.LastIndexOf(@"\") + 1))).FullName
 						}
 					}))
 					.ToArray();
@@ -172,39 +227,41 @@ this.Includes = templateInclude
 	<!--
     =======================================================================================================
                                      Task that calculates the target relative paths
+
+    For a template under \T\PT\MyApp\MyApp.vstemplate that includes ..\..\Shared\**\*.*, we would have 
+    a new item like
+    
+        <Item Include="..\..\Shared\Docs\Readme.txt">
+            <Link>T\PT\MyApp\Docs\Readme.txt</Link>
+        </Item>
+    
+    Notice how the included item points to each of the items found based on the include with wildcards
+    (if any) and how the resulting Link is properly relative as found under Shared, with the recursive 
+    dir (Docs\ in this case) added to the relative location destination. This means that the structure 
+    of wildcard-included folders is mirrored under the smart template directory.
     =======================================================================================================
     -->
-	<UsingTask TaskName="GetIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+	<UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
 		<ParameterGroup>
-			<Sources ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-			<Targets ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+			<AssignedFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
 		</ParameterGroup>
 		<Task>
 			<Using Namespace="System.IO" />
 			<Code Type="Fragment" Language="cs">
 				<![CDATA[
-foreach(var item in this.Sources)
+this.AssignedFiles = this.Files.Select(i => new TaskItem(i)).ToArray();                
+foreach(var item in this.AssignedFiles)
 {
 	item.SetMetadata("Link", 
-		Path.Combine(item.GetMetadata("TemplateRelativeDir"), 
+		Path.Combine(item.GetMetadata("TemplateDir"), 
 			new FileInfo(item.GetMetadata("FullPath"))
-				.FullName.Replace(item.GetMetadata("BaseDir"), "")
+				.FullName.Replace(item.GetMetadata("IncludedDir"), "")
 		));
+    
+    // For compatibility with the built-in AssignTargetPath task that runs for content files.
+	item.SetMetadata("TargetPath", item.GetMetadata("Link"));
 }
-
-this.Targets = this.Sources
-					.Select(source => new TaskItem(
-						Path.Combine(
-							source.GetMetadata("TemplateRelativeDir"), 
-							new FileInfo(source.GetMetadata("FullPath"))
-								.FullName
-								.Replace(source.GetMetadata("BaseDir"), "")
-							)
-						)
-					)
-					.ToArray();
-					
-this.Targets = this.Sources;
 ]]>
 			</Code>
 		</Task>

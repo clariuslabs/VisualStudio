@@ -61,8 +61,13 @@
 							Include files added via semicolon-delimited <Include> metadata
     =======================================================================================================
 	-->
-	<Target Name="IncludeSmartTemplateIncludes" Condition="'@(SmartVSTemplate)' != ''">
-		<!-- Splits by semicolon the Includes metadata of the template and generates one item for each -->
+	<Target Name="IncludeSmartTemplateIncludes" 
+			Inputs="@(SmartVSTemplate)"
+			Outputs="@(SmartVSTemplate -> %(Identity)-BATCH)"
+			Condition="'@(SmartVSTemplate)' != ''">
+		<!-- Splits by semicolon the Includes metadata of the template and generates one item for each
+		     note that we're already batching the entire targets so that the SplitTemplateIncludes always 
+		     receives a single template file to perform the split on -->
 		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(SmartVSTemplate.Include)' != ''">
 			<Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
 		</SplitTemplateIncludes>

@@ -28,6 +28,7 @@
         <!-- Before compilation is done, we add our content files from smart templates -->
 		<PrepareForBuildDependsOn>
 			$(PrepareForBuildDependsOn);
+			FindSmartTemplateCandidates;
 			IncludeSmartTemplateFiles;
 			IncludeSmartTemplateIncludes
 		</PrepareForBuildDependsOn>
@@ -41,12 +42,16 @@
 	</PropertyGroup>
 
 
-	<ItemGroup>
-		<!-- If we don't make these invisible, they show up in VS as missing files :S -->
-		<AvailableItemName Include="SmartVSTemplate">
-			<Visible>False</Visible>
-		</AvailableItemName>
-	</ItemGroup>
+	<!--
+    =======================================================================================================
+                                    Include all files including the .vstemplate
+    =======================================================================================================
+	-->
+	<Target Name="FindSmartTemplateCandidates">
+		<CreateItem Include="@(None)" Condition="'%(None.Extension)' == '.vstemplate'" PreserveExistingMetadata="true">
+			<Output TaskParameter="Include" ItemName="SmartVSTemplate" />
+		</CreateItem>
+	</Target>
 	
 	<!--
     =======================================================================================================
@@ -145,7 +150,7 @@
                   RootPath="%(_SmartTemplateContent.ZipRootDir)" 
                   ZipFile="%(_SmartTemplateContent.ZipFile)">
 			<Output TaskParameter="ZipFile" ItemName="_SmartTemplateZip" />
-		</ZipItems>        
+		</ZipItems>
 	</Target>
 
 	<!--
@@ -155,6 +160,7 @@
     -->
 	<Target Name="AddSmartTemplateZip" Condition="'@(SmartVSTemplate)' != ''">
 		<ItemGroup>
+			<FileWrites Include="@(_SmartTemplateZip)" />
 			<Content Include="@(_SmartTemplateZip)">
 				<!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->
 				<Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(SmartTemplateIntermediateOutputFullPath), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>

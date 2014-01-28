@@ -1,5 +1,5 @@
 Release Notes:
-v1.1
+v1.1.*
 * Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
 	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files
 	* Does not regenerate ZIP files if content didn't change

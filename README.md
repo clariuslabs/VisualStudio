@@ -14,7 +14,8 @@ Contains MSBuild targets that are useful when developing Visual Studio extension
   * `VSSDK40`: $(VSSDK)v4.0\
   * `VSToolsPath`: path to the MSBuild targets for the VSSDK
 
-* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
+* Smarter and simpler template authoring. Just set BuildAction to None on all your 
+  template content as well as the .vstemplate, and they become Smart Templates automatically:
 	* Supports <Include> metadata to add shared artifacts to the generated ZIP files
 	* Does not regenerate ZIP files if content didn't change
 	* Supports linked files that are copied to the output directory

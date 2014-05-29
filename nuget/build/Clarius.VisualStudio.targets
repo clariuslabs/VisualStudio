@@ -200,7 +200,7 @@
 
     =======================================================================================================
     -->
-	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
 		<ParameterGroup>
 			<Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
 			<Includes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />

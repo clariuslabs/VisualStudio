@@ -247,7 +247,7 @@ this.Includes = templateInclude
     of wildcard-included folders is mirrored under the smart template directory.
     =======================================================================================================
     -->
-	<UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+	<UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
 		<ParameterGroup>
 			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
 			<AssignedFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />

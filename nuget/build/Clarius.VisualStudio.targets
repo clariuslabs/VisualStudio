@@ -15,50 +15,50 @@
    limitations under the License.
 -->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	
-	<!-- Avoid importing twice by checking for the presence of the VsSDKVersion property -->
-	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" 
+
+    <!-- Avoid importing twice by checking for the presence of the VsSDKVersion property -->
+    <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets"
 			Condition="'$(VsSDKVersion)' == '' And '$(VSToolsPath)' != ''" />
 
-	<PropertyGroup>
+    <PropertyGroup>
         <!-- This makes it easy to change it to be $(TargetPath) instead -->
         <SmartTemplateIntermediateOutputPath Condition="'$(SmartTemplateIntermediateOutputPath)' == ''">$(IntermediateOutputPath)</SmartTemplateIntermediateOutputPath>
         <SmartTemplateIntermediateOutputFullPath>$([MSBuild]::Escape($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(SmartTemplateIntermediateOutputPath)'))'))))</SmartTemplateIntermediateOutputFullPath>
 
         <!-- Before compilation is done, we add our content files from smart templates -->
-		<PrepareForBuildDependsOn>
-			$(PrepareForBuildDependsOn);
-			FindSmartTemplateCandidates;
-			IncludeSmartTemplateFiles;
-			IncludeSmartTemplateIncludes
-		</PrepareForBuildDependsOn>
-		<!-- Before extension is deployed or VSIX built, we zip templates -->
+        <PrepareForBuildDependsOn>
+            $(PrepareForBuildDependsOn);
+            FindSmartTemplateCandidates;
+            IncludeSmartTemplateFiles;
+            IncludeSmartTemplateIncludes
+        </PrepareForBuildDependsOn>
+        <!-- Before extension is deployed or VSIX built, we zip templates -->
         <AssignTargetPathsDependsOn>
             CopyOutOfDateSmartTemplateContent;
             ZipSmartTemplateContent;
             AddSmartTemplateZip;
             $(AssignTargetPathsDependsOn)
         </AssignTargetPathsDependsOn>
-	</PropertyGroup>
+    </PropertyGroup>
 
 
-	<!--
+    <!--
     =======================================================================================================
                                     Include all files including the .vstemplate
     =======================================================================================================
 	-->
-	<Target Name="FindSmartTemplateCandidates">
-		<CreateItem Include="@(None)" Condition="'%(None.Extension)' == '.vstemplate'" PreserveExistingMetadata="true">
-			<Output TaskParameter="Include" ItemName="SmartVSTemplate" />
-		</CreateItem>
-	</Target>
-	
-	<!--
+    <Target Name="FindSmartTemplateCandidates">
+        <CreateItem Include="@(None)" Condition="'%(None.Extension)' == '.vstemplate'" PreserveExistingMetadata="true">
+            <Output TaskParameter="Include" ItemName="SmartVSTemplate" />
+        </CreateItem>
+    </Target>
+
+    <!--
     =======================================================================================================
                                     Include all files including the .vstemplate
     =======================================================================================================
 	-->
-	<Target Name="IncludeSmartTemplateFiles" Condition="'@(SmartVSTemplate)' != ''">
+    <Target Name="IncludeSmartTemplateFiles" Condition="'@(SmartVSTemplate)' != ''">
         <!-- Causes the wildcards to be resolved to generate one item per file -->
         <CreateItem Include="%(SmartVSTemplate.RelativeDir)**\*.*">
             <Output TaskParameter="Include" ItemName="_SmartTemplateRelativeFile" />
@@ -70,32 +70,32 @@
         </AssignTargetPath>
     </Target>
 
-	<!--
+    <!--
     =======================================================================================================
 							Include files added via semicolon-delimited <Include> metadata
     =======================================================================================================
 	-->
-	<Target Name="IncludeSmartTemplateIncludes" 
+    <Target Name="IncludeSmartTemplateIncludes"
 			Inputs="@(SmartVSTemplate)"
 			Outputs="@(SmartVSTemplate -> %(Identity)-BATCH)"
 			Condition="'@(SmartVSTemplate)' != ''">
-		<!-- Splits by semicolon the Includes metadata of the template and generates one item for each
+        <!-- Splits by semicolon the Includes metadata of the template and generates one item for each
 		     note that we're already batching the entire targets so that the SplitTemplateIncludes always 
 		     receives a single template file to perform the split on -->
-		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(SmartVSTemplate.Include)' != ''">
-			<Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
-		</SplitTemplateIncludes>
+        <SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(SmartVSTemplate.Include)' != ''">
+            <Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
+        </SplitTemplateIncludes>
 
-		<!-- Causes the wildcards to be resolved to generate one item per file -->
-		<CreateItem Include="@(_SmartTemplateInclude)" PreserveExistingMetadata="true">
-			<Output TaskParameter="Include" ItemName="_SmartIncludedFileSource" />
-		</CreateItem>
+        <!-- Causes the wildcards to be resolved to generate one item per file -->
+        <CreateItem Include="@(_SmartTemplateInclude)" PreserveExistingMetadata="true">
+            <Output TaskParameter="Include" ItemName="_SmartIncludedFileSource" />
+        </CreateItem>
 
-		<!-- Calculates the relative target path for each item under the target template directory -->
-		<AssignIncludeTargetPaths Files="@(_SmartIncludedFileSource)">
-			<Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />
-		</AssignIncludeTargetPaths>
-	</Target>
+        <!-- Calculates the relative target path for each item under the target template directory -->
+        <AssignIncludeTargetPaths Files="@(_SmartIncludedFileSource)">
+            <Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />
+        </AssignIncludeTargetPaths>
+    </Target>
 
     <!--
     =======================================================================================================
@@ -127,16 +127,16 @@
                                        Zip the intermediate content, if changed
     =======================================================================================================
     -->
-	<Target Name="ZipSmartTemplateContent" Condition="'@(SmartVSTemplate)' != ''">
-        
-		<ItemGroup>
+    <Target Name="ZipSmartTemplateContent" Condition="'@(SmartVSTemplate)' != ''">
+
+        <ItemGroup>
             <_SmartTemplateContent Include="$(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)**\*.*">
                 <ZipRootDir>$([System.IO.Directory]::GetParent($(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)).FullName)\</ZipRootDir>
                 <ZipFile>$([System.IO.Directory]::GetParent($(SmartTemplateIntermediateOutputFullPath)%(SmartVSTemplate.RelativeDir)).Parent.FullName)\%(SmartVSTemplate.Filename).zip</ZipFile>
             </_SmartTemplateContent>
         </ItemGroup>
 
-		<!--
+        <!--
 			The following VSSDK built-in task takes care of zipping a template. It doesn't do any pre or post-processing 
 			of the .vstemplate, which is exactly what we want as we may have links, etc. This is the opposite of what 
 			the built-in VSTemplate build action does, which mangles everything and breaks badly with linked files, 
@@ -144,33 +144,40 @@
 			
 			It doesn't re-zip if files haven't changed also.
 		-->
-		<ZipItems Files="@(_SmartTemplateContent)" 
-                  Action="New" 
-                  ProjectPath="$(SmartTemplateIntermediateOutputFullPath)" 
-                  RootPath="%(_SmartTemplateContent.ZipRootDir)" 
+        <ZipItems Files="@(_SmartTemplateContent)"
+                  Action="New"
+                  ProjectPath="$(SmartTemplateIntermediateOutputFullPath)"
+                  RootPath="%(_SmartTemplateContent.ZipRootDir)"
                   ZipFile="%(_SmartTemplateContent.ZipFile)">
-			<Output TaskParameter="ZipFile" ItemName="_SmartTemplateZip" />
-		</ZipItems>
-	</Target>
+            <Output TaskParameter="ZipFile" ItemName="_SmartTemplateZip" />
+        </ZipItems>
+    </Target>
 
-	<!--
+    <!--
     =======================================================================================================
                                        Add as content to be included in the VSIX
     =======================================================================================================
     -->
-	<Target Name="AddSmartTemplateZip" Condition="'@(SmartVSTemplate)' != ''">
-		<ItemGroup>
-			<FileWrites Include="@(_SmartTemplateZip)" />
-			<Content Include="@(_SmartTemplateZip)">
-				<!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->
-				<Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(SmartTemplateIntermediateOutputFullPath), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
-				<IncludeInVSIX>true</IncludeInVSIX>
-				<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			</Content>
-		</ItemGroup>
-	</Target>
+    <Target Name="AddSmartTemplateZip" Condition="'@(SmartVSTemplate)' != ''">
+        <ItemGroup>
+            <FileWrites Include="@(_SmartTemplateZip)" />
+            <Content Include="@(_SmartTemplateZip)">
+                <!-- This Link is used by the VSSDK target to set the VSIXSubPath directory where the item will be deployed/added to the vsix -->
+                <Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(SmartTemplateIntermediateOutputFullPath), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
+                <IncludeInVSIX>true</IncludeInVSIX>
+                <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            </Content>
+        </ItemGroup>
+    </Target>
 
-	<!--
+    <PropertyGroup>
+        <CodeTaskAssembly>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll</CodeTaskAssembly>
+        <!-- In VS2014+, the assembly was renamed. -->
+        <CodeTaskAssembly Condition="!Exists('$(CodeTaskAssembly)')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</CodeTaskAssembly>
+    </PropertyGroup>
+
+
+    <!--
     =======================================================================================================
                                        Task that splits the <Include> metadata
 
@@ -200,15 +207,15 @@
 
     =======================================================================================================
     -->
-	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-		<ParameterGroup>
-			<Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
-			<Includes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
-		</ParameterGroup>
-		<Task>
-			<Using Namespace="System.IO" />
-			<Code Type="Fragment" Language="cs">
-				<![CDATA[
+    <UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+        <ParameterGroup>
+            <Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+            <Includes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
 var templateFullDir = this.Template.GetMetadata("RootDir") + this.Template.GetMetadata("Directory");
 var templateRelativeDir = this.Template.GetMetadata("RelativeDir");
 var templateInclude = this.Template.GetMetadata("Include") ?? "";
@@ -226,11 +233,11 @@ this.Includes = templateInclude
 					}))
 					.ToArray();
 ]]>
-			</Code>
-		</Task>
-	</UsingTask>
+            </Code>
+        </Task>
+    </UsingTask>
 
-	<!--
+    <!--
     =======================================================================================================
                                      Task that calculates the target relative paths
 
@@ -247,15 +254,15 @@ this.Includes = templateInclude
     of wildcard-included folders is mirrored under the smart template directory.
     =======================================================================================================
     -->
-	<UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll">
-		<ParameterGroup>
-			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
-			<AssignedFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
-		</ParameterGroup>
-		<Task>
-			<Using Namespace="System.IO" />
-			<Code Type="Fragment" Language="cs">
-				<![CDATA[
+    <UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+        <ParameterGroup>
+            <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+            <AssignedFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO" />
+            <Code Type="Fragment" Language="cs">
+                <![CDATA[
 this.AssignedFiles = this.Files.Select(i => new TaskItem(i)).ToArray();                
 foreach(var item in this.AssignedFiles)
 {
@@ -269,8 +276,8 @@ foreach(var item in this.AssignedFiles)
 	item.SetMetadata("TargetPath", item.GetMetadata("Link"));
 }
 ]]>
-			</Code>
-		</Task>
-	</UsingTask>
+            </Code>
+        </Task>
+    </UsingTask>
 
 </Project>

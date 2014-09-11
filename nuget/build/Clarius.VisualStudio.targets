@@ -171,7 +171,9 @@
     </Target>
 
     <PropertyGroup>
-        <CodeTaskAssembly>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll</CodeTaskAssembly>
+        <CodeTaskAssembly>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</CodeTaskAssembly>
+		<!-- In VS2013, the assembly contains the VS version. -->
+		<CodeTaskAssembly Condition="!Exists('$(CodeTaskAssembly)')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(VisualStudioVersion).dll</CodeTaskAssembly>
         <!-- In VS2014+, the assembly was renamed. -->
         <CodeTaskAssembly Condition="!Exists('$(CodeTaskAssembly)')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</CodeTaskAssembly>
     </PropertyGroup>

@@ -1,4 +1,10 @@
 Release Notes:
+v1.2
+* Automatically include custom .pkgdef files added as None or Content to the project 
+  PkgDefOutputGroup. This allows the VSIX manifest to "just work" if you use the typical 
+  way of including package output via the VsPackage element and the PkgdefProjectOutputGroup
+  reference.
+  
 v1.1.*
 * Smarter and simpler template authoring. Just set BuildAction to None on all your 
   template content as well as the .vstemplate, and they become Smart Templates automatically:

@@ -27,15 +27,8 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Common targets to create version-aware Visual Studio extensions easily.</description>
     <releaseNotes>Release Notes:
-v1.2
-* Automatically include custom .pkgdef files added as None or Content to the project 
-  PkgDefOutputGroup. This allows the VSIX manifest to "just work" if you use the typical 
-  way of including package output:
-  <VsPackage>|%CurrentProject%;PkgdefProjectOutputGroup|</VsPackage>
-  
 v1.1.*
-* Smarter and simpler template authoring. Just set BuildAction to None on all your 
-  template content as well as the .vstemplate, and they become Smart Templates automatically:
+* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
 	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files
 	* Does not regenerate ZIP files if content didn't change
 	* Supports linked files that are copied to the output directory

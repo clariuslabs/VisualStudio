@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+   Copyright 2014 Clarius Consulting SA
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<PropertyGroup>
+		<CodeTaskAssembly>$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(MSBuildToolsVersion).dll</CodeTaskAssembly>
+		<!-- In VS2013, the assembly contains the VS version. -->
+		<CodeTaskAssembly Condition="!Exists('$(CodeTaskAssembly)')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.v$(VisualStudioVersion).dll</CodeTaskAssembly>
+		<!-- In VS2014+, the assembly was renamed. -->
+		<CodeTaskAssembly Condition="!Exists('$(CodeTaskAssembly)')">$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll</CodeTaskAssembly>
+	</PropertyGroup>
+
+	<!--
+    =======================================================================================================
+                                       Task that splits the <Include> metadata
+
+    If a template contains the following metadata:
+    
+        <SmartVSTemplate Include="\T\PT\MyApp\MyApp.vstemplate">
+            <Include>..\..\Shared\Common\**\*.*;..\..\Shared\CSharp\**\*.*</Include>
+        </SmartVSTemplate>
+    
+    This task will generate as output the following two items>
+
+      <Item Include="..\..\Shared\Common\**\*.*">
+        <TemplateDir>\T\PT\MyApp\</TemplateDir>
+        <TemplateParentDir>\T\PT\</TemplateParentDir>
+        <TemplateZip>MyApp.zip</TemplateZip>
+        <IncludedDir>..\..\Shared\Common\</IncludedDir>
+      </Item>
+      <Item Include="..\..\Shared\CSharp\**\*.*"
+        <TemplateDir>\T\PT\MyApp\</TemplateDir>
+        <TemplateZip>MyApp.zip</TemplateZip>
+        <IncludedDir>..\..\Shared\CSharp\</IncludedDir>
+      </Item>
+    
+    This allows the consuming target to force the wildcards to be resolved and obtain 
+    a final list of items to include, as well as preserve the originating template 
+    directory and ultimate target zip file that will contain the items.
+
+    =======================================================================================================
+    -->
+	<UsingTask TaskName="SplitTemplateIncludes" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+		<ParameterGroup>
+			<Template ParameterType="Microsoft.Build.Framework.ITaskItem" Required="true" />
+			<Includes ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.IO" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+var templateFullDir = this.Template.GetMetadata("RootDir") + this.Template.GetMetadata("Directory");
+var templateRelativeDir = this.Template.GetMetadata("RelativeDir");
+var templateInclude = this.Template.GetMetadata("Include") ?? "";
+this.Includes = templateInclude
+					.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+					.Select(include => new TaskItem(Path.Combine(templateFullDir, include), new Dictionary<string, string>
+					{
+						{ "TemplateDir", templateRelativeDir },
+						{ "IncludedDir", include.IndexOf("**") != -1 ?
+								// We have a relative dir in the path.
+								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.IndexOf("**")))).FullName :
+								// We don't have relative dirs, so just pick the path.
+								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.LastIndexOf(@"\") + 1))).FullName
+						}
+					}))
+					.ToArray();
+]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+	<!--
+    =======================================================================================================
+                                     Task that calculates the target relative paths
+
+    For a template under \T\PT\MyApp\MyApp.vstemplate that includes ..\..\Shared\**\*.*, we would have 
+    a new item like
+    
+        <Item Include="..\..\Shared\Docs\Readme.txt">
+            <Link>T\PT\MyApp\Docs\Readme.txt</Link>
+        </Item>
+    
+    Notice how the included item points to each of the items found based on the include with wildcards
+    (if any) and how the resulting Link is properly relative as found under Shared, with the recursive 
+    dir (Docs\ in this case) added to the relative location destination. This means that the structure 
+    of wildcard-included folders is mirrored under the smart template directory.
+    =======================================================================================================
+    -->
+	<UsingTask TaskName="AssignIncludeTargetPaths" TaskFactory="CodeTaskFactory" AssemblyFile="$(CodeTaskAssembly)">
+		<ParameterGroup>
+			<Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+			<AssignedFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+		</ParameterGroup>
+		<Task>
+			<Using Namespace="System.IO" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+this.AssignedFiles = this.Files.Select(i => new TaskItem(i)).ToArray();                
+foreach(var item in this.AssignedFiles)
+{
+	item.SetMetadata("Link", 
+		Path.Combine(item.GetMetadata("TemplateDir"), 
+			new FileInfo(item.GetMetadata("FullPath"))
+				.FullName.Replace(item.GetMetadata("IncludedDir"), "")
+		));
+    
+    // For compatibility with the built-in AssignTargetPath task that runs for content files.
+	item.SetMetadata("TargetPath", item.GetMetadata("Link"));
+}
+]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
+</Project>

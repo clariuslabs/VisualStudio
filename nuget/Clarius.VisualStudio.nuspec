@@ -28,7 +28,8 @@
     <description>Common targets to create version-aware Visual Studio extensions easily.</description>
     <releaseNotes>Release Notes:
 v1.1.*
-* Smarter and simpler template authoring. Just set BuildAction to SmartVSTemplate
+* Smarter and simpler template authoring. Just set BuildAction to None on all your 
+  template content as well as the .vstemplate, and they become Smart Templates automatically:
 	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files
 	* Does not regenerate ZIP files if content didn't change
 	* Supports linked files that are copied to the output directory

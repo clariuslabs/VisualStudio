@@ -166,6 +166,7 @@
                 <Link>$([System.IO.Directory]::GetParent(%(_SmartTemplateZip.FullPath)).FullName.Replace($(SmartTemplateIntermediateOutputFullPath), ''))\%(_SmartTemplateZip.Filename)%(_SmartTemplateZip.Extension)</Link>
                 <IncludeInVSIX>true</IncludeInVSIX>
                 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                <UseAssemblyName>false</UseAssemblyName>
             </Content>
         </ItemGroup>
     </Target>

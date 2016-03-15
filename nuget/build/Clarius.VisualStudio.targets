@@ -68,6 +68,11 @@
         <AssignTargetPath Files="@(_SmartTemplateRelativeFile)" RootFolder="$(MSBuildProjectDirectory)">
             <Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />
         </AssignTargetPath>
+        
+	<!-- Add the smart template itself too, in case we need to process it later -->
+	<AssignTargetPath Files="@(SmartVSTemplate)" RootFolder="$(MSBuildProjectDirectory)">
+		<Output TaskParameter="AssignedFiles" ItemName="SmartTemplateWithTargetPath" />
+	</AssignTargetPath>
     </Target>
 
     <!--

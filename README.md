@@ -1,5 +1,8 @@
 # ![Icon](https://raw.github.com/clariuslabs/VisualStudio/master/icon/32.png) VisualStudio Targets
 
+[![Build status](https://ci.appveyor.com/api/projects/status/upvkqk92al5vn0an?svg=true)](https://ci.appveyor.com/project/MobileEssentials/visualstudio) 
+[![Latest version](https://img.shields.io/nuget/v/Clarius.VisualStudio.svg)](https://www.nuget.org/packages/Clarius.VisualStudio)
+[![License](https://img.shields.io/github/license/clariuslabs/VisualStudio.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 Contains MSBuild targets that are useful when developing Visual Studio extensions. 
 

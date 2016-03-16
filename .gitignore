@@ -5,5 +5,7 @@
 bin
 obj
 packages
+out
+log.txt
 /nuget/build/*.dll
 /nuget/build/*.pdb

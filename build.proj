@@ -19,86 +19,36 @@
          xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<PropertyGroup>
-		<BuildRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), .gitignore))</BuildRoot>
-		<BuildRoot Condition="!HasTrailingSlash('$(BuildRoot)')">$(BuildRoot)\</BuildRoot>
-		<_PackageVersion Condition="'$(PackageVersion)' == ''">0.1</_PackageVersion>
-		<_PackageVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</_PackageVersion>		
+		<Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+		<IntermediateOutputPath>.nuget\</IntermediateOutputPath>
+		<PackagesPath>$(IntermediateOutputPath)packages</PackagesPath>
+		<Out Condition=" '$(Out)' == '' ">out</Out>
+		<CommonBuildProperties>WarningLevel=0;NoWarn=1591;RunCodeAnalysis=false;Configuration=$(Configuration)</CommonBuildProperties>
 		<TrackFileAccess>false</TrackFileAccess>
-		
-		<!-- MyGet already provides a %nuget% environment variable with its own nuget path -->
-		<nuget Condition="'$(nuget)' == ''">$(SolutionDir).nuget\nuget.exe</nuget>
+		<GitInfoReportImportance>high</GitInfoReportImportance>
 	</PropertyGroup>
-	
-	<ItemGroup>
-		<NuSpec Include="**\*.nuspec" />
-		<PackageConfig Include="**\packages.config" />
-	</ItemGroup>
-		
-    <Target Name="Build" DependsOnTargets="BuildNuGet" />
 
-	<Target Name="BuildNuGet" Inputs="@(NuSpec)" Outputs="%(Identity)-BATCH" DependsOnTargets="_DownloadNuGet;RestorePackages">
+	<ItemGroup>
+		<Solution Include="VisualStudio.sln"/>
+		<NuSpec Include="nuget\Clarius.VisualStudio.nuspec" />
+	</ItemGroup>
+
+	<Target Name="Build" DependsOnTargets="GitInfoReport;UpdateReleaseNotes">
+    <MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
+		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
+		<Exec Command="&quot;$(IntermediateOutputPath)NuGet.exe&quot; Pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)&quot; -OutputDirectory $(Out)" />
+	</Target>
+	
+	<Target Name="UpdateReleaseNotes" Inputs="@(NuSpec)" Outputs="%(Identity)-BATCH">
 		<PropertyGroup>
 			<ReadmePath>%(NuSpec.RootDir)%(NuSpec.Directory)Readme.txt</ReadmePath>
 			<Readme Condition="Exists('$(ReadmePath)')">$([System.IO.File]::ReadAllText('$(ReadmePath)'))</Readme>
 		</PropertyGroup>
 
-		<ItemGroup>
-			<_NuSpecTransform Include="@(NuSpec)" Condition="'$(Readme)' != ''">
-				<Find><![CDATA[<releaseNotes />|<releaseNotes/>|<releaseNotes>.*</releaseNotes>]]></Find>
-				<ReplaceWith><![CDATA[<releaseNotes>$(Readme)</releaseNotes>]]></ReplaceWith>
-				<Options>Singleline</Options>
-			</_NuSpecTransform>
-		</ItemGroup>
-
-		<Message Text="Updating %(NuSpec.Filename)%(NuSpec.Extension) release notes from existing readme file"
-				 Condition="'$(Readme)' != ''"
-				 Importance="High" />
-
-		<XmlPoke XmlInputPath="@(NuSpec)" Query="/package/metadata/releaseNotes" Value="$(Readme)"/>
-
-		<Exec Command="&quot;$(nuget)&quot; pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(_PackageVersion)&quot;"
-              ContinueOnError="false" />
+		<XmlPoke XmlInputPath="@(NuSpec)" Query="/package/metadata/releaseNotes" Value="$(Readme)" Condition="'$(Readme)' != ''" />
 	</Target>
 
-	<Target Name="RestorePackages" Condition="'@(PackageConfig)' != ''">
-		<Message Text="Restoring NuGet packages..." Importance="High" />
-		<Exec Command="$(nuget) restore %(PackageConfig.FullPath) -NonInteractive -Verbosity quiet" />
-	</Target>
-
-	<Target Name="_DownloadNuGet" Condition="!Exists('$(nuget)')">
-		<MakeDir Directories="$(BuildRoot).nuget" />
-		<DownloadNuGet OutputFilename="$(nuget)" />
-	</Target>
-
-	<UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-		<ParameterGroup>
-			<OutputFilename ParameterType="System.String" Required="true" />
-		</ParameterGroup>
-		<Task>
-			<Reference Include="System.Core" />
-			<Using Namespace="System" />
-			<Using Namespace="System.IO" />
-			<Using Namespace="System.Net" />
-			<Using Namespace="Microsoft.Build.Framework" />
-			<Using Namespace="Microsoft.Build.Utilities" />
-			<Code Type="Fragment" Language="cs">
-				<![CDATA[
-         try {
-             OutputFilename = Path.GetFullPath(OutputFilename);
-
-             Log.LogMessage("Downloading latest version of NuGet.exe...");
-             WebClient webClient = new WebClient();
-             webClient.DownloadFile("https://nuget.org/nuget.exe", OutputFilename);
-
-             return true;
-         }
-         catch (Exception ex) {
-             Log.LogErrorFromException(ex);
-             return false;
-         }
-       ]]>
-			</Code>
-		</Task>
-	</UsingTask>
-
+	<Import Project="$(PackagesPath)\GitInfo\build\GitInfo.targets"
+			Condition="Exists('$(PackagesPath)\GitInfo\build\GitInfo.targets')"/>
+	
 </Project>

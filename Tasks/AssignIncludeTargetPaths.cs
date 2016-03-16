@@ -8,11 +8,22 @@ using Microsoft.Build.Utilities;
 
 namespace Clarius.VisualStudio.Tasks
 {
+	/// <summary>
+	/// Assigns the target path to the given items, by setting the
+	/// Link metadata on the items based on the original item directory.
+	/// </summary>
 	public class AssignIncludeTargetPaths : Task
 	{
+		/// <summary>
+		/// Files to assign the target paths to.
+		/// </summary>
 		[Required]
 		public ITaskItem[] Files { get; set; }
 
+		/// <summary>
+		/// Files with the assigned target path.
+		/// </summary>
+		[Output]
 		public ITaskItem[] AssignedFiles { get; set; }
 
 		public override bool Execute ()

@@ -34,11 +34,11 @@
 	</ItemGroup>
 
 	<Target Name="Build" DependsOnTargets="GitInfoReport;UpdateReleaseNotes">
-    <MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
+		<MakeDir Directories="$(Out)" Condition="!Exists('$(Out)')" />
 		<MSBuild Projects="@(Solution)" Properties="$(CommonBuildProperties)" />
 		<Exec Command="&quot;$(IntermediateOutputPath)NuGet.exe&quot; Pack -NoPackageAnalysis &quot;%(NuSpec.FullPath)&quot; -Version &quot;$(GitSemVerMajor).$(GitSemVerMinor).$(GitSemVerPatch)$(GitSemVerDashLabel)&quot; -OutputDirectory $(Out)" />
 	</Target>
-	
+
 	<Target Name="UpdateReleaseNotes" Inputs="@(NuSpec)" Outputs="%(Identity)-BATCH">
 		<PropertyGroup>
 			<ReadmePath>%(NuSpec.RootDir)%(NuSpec.Directory)Readme.txt</ReadmePath>
@@ -50,5 +50,5 @@
 
 	<Import Project="$(PackagesPath)\GitInfo\build\GitInfo.targets"
 			Condition="Exists('$(PackagesPath)\GitInfo\build\GitInfo.targets')"/>
-	
+
 </Project>

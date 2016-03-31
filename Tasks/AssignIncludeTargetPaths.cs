@@ -18,13 +18,13 @@ namespace Clarius.VisualStudio.Tasks
 		/// Files to assign the target paths to.
 		/// </summary>
 		[Required]
-		public ITaskItem[] Files { get; set; }
+		public Microsoft.Build.Framework.ITaskItem[] Files { get; set; }
 
 		/// <summary>
 		/// Files with the assigned target path.
 		/// </summary>
 		[Output]
-		public ITaskItem[] AssignedFiles { get; set; }
+		public Microsoft.Build.Framework.ITaskItem[] AssignedFiles { get; set; }
 
 		public override bool Execute ()
 		{

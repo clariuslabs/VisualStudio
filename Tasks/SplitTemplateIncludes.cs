@@ -19,13 +19,13 @@ namespace Clarius.VisualStudio.Tasks
 		/// Template source with optional Include metadata attribute.
 		/// </summary>
 		[Required]
-		public ITaskItem Template { get; set; }
+		public Microsoft.Build.Framework.ITaskItem Template { get; set; }
 
 		/// <summary>
 		/// The item spec of the Include attribute, split by ';'.
 		/// </summary>
 		[Output]
-		public ITaskItem[] Includes { get; set; }
+		public Microsoft.Build.Framework.ITaskItem[] Includes { get; set; }
 
 		public override bool Execute ()
 		{

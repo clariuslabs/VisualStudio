@@ -89,12 +89,20 @@
 		     receives a single template file to perform the split on -->
 		<SplitTemplateIncludes Template="@(SmartVSTemplate)" Condition="'%(SmartVSTemplate.Include)' != ''">
 			<Output ItemName="_SmartTemplateInclude" TaskParameter="Includes" />
+			<Output ItemName="_SmartTemplateExclude" TaskParameter="Excludes" />
 		</SplitTemplateIncludes>
 
 		<!-- Causes the wildcards to be resolved to generate one item per file -->
 		<CreateItem Include="@(_SmartTemplateInclude)" PreserveExistingMetadata="true">
 			<Output TaskParameter="Include" ItemName="_SmartIncludedFileSource" />
 		</CreateItem>
+		<CreateItem Include="@(_SmartTemplateExclude)" PreserveExistingMetadata="true">
+			<Output TaskParameter="Include" ItemName="_SmartExcludedFileSource" />
+		</CreateItem>
+		<!-- Remove the excluded files from the source -->
+		<ItemGroup>
+			<_SmartIncludedFileSource Remove="@(_SmartExcludedFileSource)" />
+		</ItemGroup>
 
 		<!-- Calculates the relative target path for each item under the target template directory -->
 		<AssignIncludeTargetPaths Files="@(_SmartIncludedFileSource)">

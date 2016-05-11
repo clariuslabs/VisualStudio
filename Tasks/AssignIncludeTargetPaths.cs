@@ -33,7 +33,7 @@ namespace Clarius.VisualStudio.Tasks
 				item.SetMetadata ("Link",
 					Path.Combine (item.GetMetadata ("TemplateDir"),
 						new FileInfo (item.GetMetadata ("FullPath"))
-							.FullName.Replace (item.GetMetadata ("IncludedDir"), "")
+							.FullName.Replace (item.GetMetadata ("SourceDir"), "")
 					));
 
 				// For compatibility with the built-in AssignTargetPath task that runs for content files.

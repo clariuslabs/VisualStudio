@@ -27,6 +27,12 @@ namespace Clarius.VisualStudio.Tasks
 		[Output]
 		public Microsoft.Build.Framework.ITaskItem[] Includes { get; set; }
 
+		/// <summary>
+		/// The item spec of the Exclude attribute, split by ';'.
+		/// </summary>
+		[Output]
+		public Microsoft.Build.Framework.ITaskItem[] Excludes { get; set; }
+
 		public override bool Execute ()
 		{
 			var templateFullDir = this.Template.GetMetadata ("RootDir") + this.Template.GetMetadata ("Directory");
@@ -40,11 +46,29 @@ namespace Clarius.VisualStudio.Tasks
 						// The files are expanded into individual files by the targets, so that the metadata can be
 						// set for each independently.
 						{ "TemplateDir", templateRelativeDir },
-						{ "IncludedDir", include.IndexOf("**") != -1 ?
+						{ "SourceDir", include.IndexOf("**") != -1 ?
 								// We have a relative dir in the path.
 								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.IndexOf("**")))).FullName :
 								// We don't have relative dirs, so just pick the path.
 								new DirectoryInfo(Path.Combine(templateFullDir, include.Substring(0, include.LastIndexOf(@"\") + 1))).FullName
+						}
+					}))
+								.ToArray ();
+
+			var templateExclude = this.Template.GetMetadata ("Exclude") ?? "";
+			this.Excludes = templateExclude
+								.Split (new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+								.Select (exclude => new TaskItem (Path.Combine (templateFullDir, exclude), new Dictionary<string, string>
+					{
+						// NOTE: these values are used by AssignIncludeTargetPaths to determine the Link for the files.
+						// The files are expanded into individual files by the targets, so that the metadata can be
+						// set for each independently.
+						{ "TemplateDir", templateRelativeDir },
+						{ "SourceDir", exclude.IndexOf("**") != -1 ?
+								// We have a relative dir in the path.
+								new DirectoryInfo(Path.Combine(templateFullDir, exclude.Substring(0, exclude.IndexOf("**")))).FullName :
+								// We don't have relative dirs, so just pick the path.
+								new DirectoryInfo(Path.Combine(templateFullDir, exclude.Substring(0, exclude.LastIndexOf(@"\") + 1))).FullName
 						}
 					}))
 								.ToArray ();

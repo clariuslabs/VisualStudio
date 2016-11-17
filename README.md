@@ -7,7 +7,7 @@
 Contains MSBuild targets that are useful when developing Visual Studio extensions. 
 
 * Provides the following MSBuild properties for version-aware projects:
-  * `VisualStudioVersion`: for VS2010, sets it to '10.0'
+  * `VisualStudioVersion`: ensures it's always set (i.e. under dev15+, sets it to '15.0' on command line builds
   * `MinimumVisualStudioVersion`: equals `VisualStudioVersion` to allow opening on any version
   * `DevEnvDir`: if it's empty, for safe command-line building. Can be overriden.
   * `PublicAssemblies`: $(DevEnvDir)\PublicAssemblies\
@@ -16,6 +16,10 @@ Contains MSBuild targets that are useful when developing Visual Studio extension
   * `VSSDK20`: $(VSSDK)v2.0\
   * `VSSDK40`: $(VSSDK)v4.0\
   * `VSToolsPath`: path to the MSBuild targets for the VSSDK
+  * `Dev`: simple version number from Visual Studio version, without the decimal (i.e. '15')
+  * `DEV[n]` defined constant for conditional code compilation (i.e. #if DEV15, to compile 
+    only when building for VS2017). Gets `n` from `$(Dev)` value.
+
 
 * Smarter and simpler template authoring. Just set BuildAction to None on all your 
   template content as well as the .vstemplate, and they become Smart Templates automatically:

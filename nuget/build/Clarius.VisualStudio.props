@@ -16,59 +16,59 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-	<PropertyGroup>
-		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &gt;= '12.0'">$(MSBuildToolsVersion)</VisualStudioVersion>
-		<!-- Backwards compatible behavior -->
-		<VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &lt; '12.0'">10.0</VisualStudioVersion>
-		<!-- Define $(Dev) to compare with the simple VS numeric version i.e. '15' directly in MSBuild -->
-		<Dev Condition="'$(Dev)' == '' Or '$(Dev)' == '.'">$(VisualStudioVersion.Substring(0, $(VisualStudioVersion.IndexOf('.'))))</Dev>
-		<DefineConstants>$(DefineConstants);DEV$(Dev)</DefineConstants>
-		<DefineConstants>$(DefineConstants);VS$(VisualStudioVersion.Replace('.', ''))</DefineConstants>
-	</PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &gt;= '12.0'">$(MSBuildToolsVersion)</VisualStudioVersion>
+    <!-- Backwards compatible behavior -->
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &lt; '12.0'">10.0</VisualStudioVersion>
+    <!-- Define $(Dev) to compare with the simple VS numeric version i.e. '15' directly in MSBuild -->
+    <Dev Condition="'$(Dev)' == '' Or '$(Dev)' == '.'">$(VisualStudioVersion.Substring(0, $(VisualStudioVersion.IndexOf('.'))))</Dev>
+    <DefineConstants>$(DefineConstants);DEV$(Dev)</DefineConstants>
+    <DefineConstants>$(DefineConstants);VS$(VisualStudioVersion.Replace('.', ''))</DefineConstants>
+  </PropertyGroup>
 
-	<!-- This is the property that causes VS 2012+ to insist on one-way update of the project -->
-	<PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '11.0'">
-		<MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
-	</PropertyGroup>
-	<!-- This is an additional property added by VS 2013 -->
-	<PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '12.0'">
-		<OldToolsVersion>4.0</OldToolsVersion>
-	</PropertyGroup>
+  <!-- This is the property that causes VS 2012+ to insist on one-way update of the project -->
+  <PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '11.0'">
+    <MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <!-- This is an additional property added by VS 2013 -->
+  <PropertyGroup Condition="'$(VisualStudioVersion)' &gt;= '12.0'">
+    <OldToolsVersion>4.0</OldToolsVersion>
+  </PropertyGroup>
 
-	<!-- On build servers and command line, this property is not available, so we redefine it in 
+  <!-- On build servers and command line, this property is not available, so we redefine it in 
              terms of the environment variables created by VS when installed -->
-	<PropertyGroup Condition="'$(DevEnvDir)' == ''">
-		<VSCommToolsVar>VS$(VisualStudioVersion.Replace('.', ''))COMNTOOLS</VSCommToolsVar>
-		<DevEnvDir Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
-		<DevEnvDir Condition="'$(VsInstallRoot)' != ''">$(VsInstallRoot)Common7\IDE\</DevEnvDir>
-		<DevEnvDir>$([System.IO.Path]::GetFullPath('$(DevEnvDir)'))</DevEnvDir>
-	</PropertyGroup>
-	
-	<!-- VSSDK directories setup -->
-	<PropertyGroup Condition="'$(VSSDK)' == ''">
-		<VSSDKVar>VSSDK$(VisualStudioVersion.Replace('.', ''))Install</VSSDKVar>
-		<VSSDK Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
-		<VSSDK Condition="'$(VsInstallRoot)' != ''">$(VsInstallRoot)VSSDK\</VSSDK>
-	</PropertyGroup>
-	<PropertyGroup>
-		<VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>
-		<VSSDK40>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v4.0\</VSSDK40>
-		<VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(DevEnvDir)' == ''">
+    <VSCommToolsVar>VS$(VisualStudioVersion.Replace('.', ''))COMNTOOLS</VSCommToolsVar>
+    <DevEnvDir Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
+    <DevEnvDir Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'Common7', 'IDE'))\</DevEnvDir>
+    <DevEnvDir>$([System.IO.Path]::GetFullPath('$(DevEnvDir)'))</DevEnvDir>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<PublicAssemblies>$(DevEnvDir)PublicAssemblies\</PublicAssemblies>
-		<PrivateAssemblies>$(DevEnvDir)PublicAssemblies\</PrivateAssemblies>
-	</PropertyGroup>
+  <!-- VSSDK directories setup -->
+  <PropertyGroup Condition="'$(VSSDK)' == ''">
+    <VSSDKVar>VSSDK$(VisualStudioVersion.Replace('.', ''))Install</VSSDKVar>
+    <VSSDK Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
+    <VSSDK Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'VSSDK'))\</VSSDK>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>
+    <VSSDK40>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v4.0\</VSSDK40>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
 
-	<!-- Set startup process to always start with the experimental instance and logging enabled -->
-	<PropertyGroup>
-		<StartAction>Program</StartAction>
-		<StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
-		<StartArguments>/rootSuffix Exp</StartArguments>
-	</PropertyGroup>
+  <PropertyGroup>
+    <PublicAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir)', 'PublicAssemblies'))\</PublicAssemblies>
+    <PrivateAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir)', 'PrivateAssemblies'))\</PrivateAssemblies>
+  </PropertyGroup>
 
-	<PropertyGroup>
-		<ClariusVisualStudioPropsImported>true</ClariusVisualStudioPropsImported>
-	</PropertyGroup>
+  <!-- Set startup process to always start with the experimental instance and logging enabled -->
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootSuffix Exp</StartArguments>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ClariusVisualStudioPropsImported>true</ClariusVisualStudioPropsImported>
+  </PropertyGroup>
 </Project>

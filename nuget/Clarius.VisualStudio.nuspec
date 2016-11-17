@@ -17,7 +17,7 @@
 <package>
   <metadata>
     <id>Clarius.VisualStudio</id>
-    <version>1.0</version>
+    <version>2.0</version>
     <title>Visual Studio Targets</title>
     <authors>Daniel Cazzulino</authors>
     <owners>clariuslabs, danielkzu</owners>

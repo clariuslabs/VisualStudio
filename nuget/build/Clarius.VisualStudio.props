@@ -24,6 +24,7 @@
     <Dev Condition="'$(Dev)' == '' Or '$(Dev)' == '.'">$(VisualStudioVersion.Substring(0, $(VisualStudioVersion.IndexOf('.'))))</Dev>
     <DefineConstants>$(DefineConstants);DEV$(Dev)</DefineConstants>
     <DefineConstants>$(DefineConstants);VS$(VisualStudioVersion.Replace('.', ''))</DefineConstants>
+    <IsAppLocalIde Condition="'$(VsInstallRoot)' != '' And '$(VisualStudioVersion)' &gt;= '15.0'">true</IsAppLocalIde>
   </PropertyGroup>
 
   <!-- This is the property that causes VS 2012+ to insist on one-way update of the project -->
@@ -39,16 +40,16 @@
              terms of the environment variables created by VS when installed -->
   <PropertyGroup Condition="'$(DevEnvDir)' == ''">
     <VSCommToolsVar>VS$(VisualStudioVersion.Replace('.', ''))COMNTOOLS</VSCommToolsVar>
-    <DevEnvDir Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
-    <DevEnvDir Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'Common7', 'IDE'))\</DevEnvDir>
+    <DevEnvDir Condition="'$(IsAppLocalIde)' != 'true'">$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
+    <DevEnvDir Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'Common7', 'IDE'))\</DevEnvDir>
     <DevEnvDir>$([System.IO.Path]::GetFullPath('$(DevEnvDir)'))</DevEnvDir>
   </PropertyGroup>
 
   <!-- VSSDK directories setup -->
   <PropertyGroup Condition="'$(VSSDK)' == ''">
     <VSSDKVar>VSSDK$(VisualStudioVersion.Replace('.', ''))Install</VSSDKVar>
-    <VSSDK Condition="'$(VsInstallRoot)' == ''">$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
-    <VSSDK Condition="'$(VsInstallRoot)' != ''">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'VSSDK'))\</VSSDK>
+    <VSSDK Condition="'$(IsAppLocalIde)' != 'true'">$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
+    <VSSDK Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'VSSDK'))\</VSSDK>
   </PropertyGroup>
   <PropertyGroup>
     <VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>

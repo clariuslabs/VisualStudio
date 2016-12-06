@@ -18,8 +18,7 @@
 
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &gt;= '12.0'">$(MSBuildToolsVersion)</VisualStudioVersion>
-    <!-- Backwards compatible behavior -->
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &lt; '12.0'">10.0</VisualStudioVersion>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == '' And '$(MSBuildToolsVersion)' &lt; '12.0'">11.0</VisualStudioVersion>
     <!-- Define $(Dev) to compare with the simple VS numeric version i.e. '15' directly in MSBuild -->
     <Dev Condition="'$(Dev)' == '' Or '$(Dev)' == '.'">$(VisualStudioVersion.Substring(0, $(VisualStudioVersion.IndexOf('.'))))</Dev>
     <DefineConstants>$(DefineConstants);DEV$(Dev)</DefineConstants>
@@ -54,7 +53,8 @@
   <PropertyGroup>
     <VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>
     <VSSDK40>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v4.0\</VSSDK40>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <VSToolsPath Condition="'$(IsAppLocalIde)' != 'true'">$(ProgramFiles)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <VSToolsPath Condition="'$(IsAppLocalIde)' == 'true'">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
 
   <PropertyGroup>

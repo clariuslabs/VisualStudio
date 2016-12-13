@@ -18,9 +18,34 @@
 
 	<Import Project="Clarius.VisualStudio.props" Condition="'$(ClariusVisualStudioPropsImported)' != 'true'" />
 
-	<!-- Avoid importing twice by checking for the presence of the VsSDKVersion property -->
-	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" 
-			Condition="'$(VsSDKVersion)' == '' And '$(VSToolsPath)' != '' And Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+	<!-- VsSDK.Common.targets is imported automatically by the VsSDK.targets -->
+	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets"
+			Condition="'$(DetokenizeVsixManifestFileDependsOn)' == '' And '$(VSToolsPath)' != '' And Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+
+	<PropertyGroup>
+		<ClariusVisualStudioTargetsImported>true</ClariusVisualStudioTargetsImported>
+		<!-- Reset properties from the VSSDK targets -->
+		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
+		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
+		<VSSDKTargetsPath>$(VSToolsPath)\VSSDK</VSSDKTargetsPath>
+		<VsSDKInstall>$(VSSDK)VisualStudioIntegration</VsSDKInstall>
+		<VsSDKIncludes>$(VsSDKInstall)\Common\inc</VsSDKIncludes>
+		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
+	</PropertyGroup>
+
+	<UsingTask TaskName="SetVsSDKEnvironmentVariables" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<ParameterGroup>
+			<VsSDKToolsPath Required="true" />
+		</ParameterGroup>
+		<Task>
+			<Code Type="Fragment" Language="cs">
+				System.Environment.SetEnvironmentVariable("VsSDKToolsPath", System.IO.Path.GetFullPath(VsSDKToolsPath),EnvironmentVariableTarget.Process);
+			</Code>
+		</Task>
+	</UsingTask>
+	<Target Name="SetVsSDKEnvironmentVariables" BeforeTargets="GeneratePkgDef;VSCTCompile">
+		<SetVsSDKEnvironmentVariables VsSDKToolsPath="$(VsSDKToolsPath)" />
+	</Target>
 
 	<PropertyGroup>
 		<!-- This makes it easy to change it to be $(TargetPath) instead -->
@@ -66,7 +91,7 @@
 			<Output TaskParameter="Include" ItemName="_SmartTemplateRelativeFile" />
 		</CreateItem>
 
-		
+
 		<!-- Leverage built-in task to assign TargetPath metadata -->
 		<AssignTargetPath Files="@(_SmartTemplateRelativeFile)" RootFolder="$(MSBuildProjectDirectory)">
 			<Output TaskParameter="AssignedFiles" ItemName="SmartTemplateContentWithTargetPath" />

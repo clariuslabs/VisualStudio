@@ -33,7 +33,7 @@
 		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
 	</PropertyGroup>
 
-	<UsingTask TaskName="SetVsSDKEnvironmentVariables" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+	<UsingTask TaskName="SetVsSDKEnv" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
 		<ParameterGroup>
 			<VsSDKToolsPath Required="true" />
 		</ParameterGroup>
@@ -43,8 +43,8 @@
 			</Code>
 		</Task>
 	</UsingTask>
-	<Target Name="SetVsSDKEnvironmentVariables" BeforeTargets="GeneratePkgDef;VSCTCompile">
-		<SetVsSDKEnvironmentVariables VsSDKToolsPath="$(VsSDKToolsPath)" />
+	<Target Name="SetVsSDKEnv" BeforeTargets="GeneratePkgDef;VSCTCompile">
+		<SetVsSDKEnv VsSDKToolsPath="$(VsSDKToolsPath)" />
 	</Target>
 
 	<PropertyGroup>

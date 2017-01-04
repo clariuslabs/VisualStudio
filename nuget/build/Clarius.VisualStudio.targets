@@ -24,6 +24,8 @@
 
 	<PropertyGroup>
 		<ClariusVisualStudioTargetsImported>true</ClariusVisualStudioTargetsImported>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
 		<!-- Reset properties from the VSSDK targets -->
 		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
 		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
@@ -43,7 +45,7 @@
 			</Code>
 		</Task>
 	</UsingTask>
-	<Target Name="SetVsSDKEnv" BeforeTargets="GeneratePkgDef;VSCTCompile">
+	<Target Name="SetVsSDKEnv" Condition="'$(OverrideVsSDK)' != 'false'" BeforeTargets="GeneratePkgDef;VSCTCompile">
 		<SetVsSDKEnv VsSDKToolsPath="$(VsSDKToolsPath)" />
 	</Target>
 

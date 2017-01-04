@@ -71,7 +71,7 @@
 	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.Common.props"
 			Condition="'$(VsSDKVersion)' == '' And '$(VSToolsPath)' != '' And Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.Common.props')" />
 
-	<PropertyGroup>
+	<PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
 		<!-- Reset properties from the common props -->
 		<VSToolsPath Condition="'$(IsAppLocalIde)' != 'true'">$(ProgramFiles)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
 		<VSToolsPath Condition="'$(IsAppLocalIde)' == 'true'">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

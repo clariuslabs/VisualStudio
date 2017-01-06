@@ -67,18 +67,32 @@
 		<StartArguments>/rootSuffix Exp</StartArguments>
 	</PropertyGroup>
 
-	<!-- Avoid importing twice by checking for the presence of the VsSDKVersion property -->
-	<Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.Common.props"
-			Condition="'$(OverrideVsSDK)' != 'false' And '$(VsSDKVersion)' == '' And '$(VSToolsPath)' != '' And Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.Common.props')" />
-
+	<PropertyGroup>
+		<!-- Set a sensible default for whether this target will override the VSSDK location or not.
+			 The heuristic is as follows: the VSSDK nuget package (not the VS installation-imported 
+			 one), provides a non-empty $(VSToolsPath) property, 
+			 We use the presence of that property as a hint that we should not override the VSSDK 
+			 props, since the user has opted in for an explicit version of the VSSDK himself.
+			 
+			 NOTE: in order for this heuristic to work, the VSSDK has to be installed BEFORE installing
+			 Clarius.VisualStudio nuget package, so that its .props come before this one.
+			 
+			 If, on the other hand, no such property is found, it means the user wants the automatic
+			 switching of VSSDK paths according to the determined VisualStudioVersion value, so that 
+			 building for multiple VS versions can automatically switch to the right assembly refs 
+			 and targets.
+		-->
+		<OverrideVsSDK Condition="'$(VSToolsPath)' != ''">false</OverrideVsSDK>
+	</PropertyGroup>
+	
 	<PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
-		<!-- Reset properties from the common props -->
+		<!-- Reset properties from the VSSDK targets -->
 		<VSToolsPath Condition="'$(IsAppLocalIde)' != 'true'">$(ProgramFiles)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
 		<VSToolsPath Condition="'$(IsAppLocalIde)' == 'true'">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
 		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
 		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
 		<VSSDKTargetsPath>$(VSToolsPath)\VSSDK</VSSDKTargetsPath>
-		<VsSDKInstall>$(VSSDK)VisualStudioIntegration</VsSDKInstall>
+		<VsSDKInstall>$(VSToolsPath)\VSSDK</VsSDKInstall>
 		<VsSDKIncludes>$(VsSDKInstall)\Common\inc</VsSDKIncludes>
 		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
 	</PropertyGroup>

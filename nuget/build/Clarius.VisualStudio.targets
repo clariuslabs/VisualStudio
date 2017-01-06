@@ -25,12 +25,13 @@
 	<PropertyGroup>
 		<ClariusVisualStudioTargetsImported>true</ClariusVisualStudioTargetsImported>
 	</PropertyGroup>
+
 	<PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
 		<!-- Reset properties from the VSSDK targets -->
 		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
 		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
 		<VSSDKTargetsPath>$(VSToolsPath)\VSSDK</VSSDKTargetsPath>
-		<VsSDKInstall>$(VSSDK)VisualStudioIntegration</VsSDKInstall>
+		<VsSDKInstall>$(VSToolsPath)\VSSDK</VsSDKInstall>
 		<VsSDKIncludes>$(VsSDKInstall)\Common\inc</VsSDKIncludes>
 		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
 	</PropertyGroup>

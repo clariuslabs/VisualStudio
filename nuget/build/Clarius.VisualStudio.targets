@@ -50,6 +50,27 @@
 		<SetVsSDKEnv VsSDKToolsPath="$(VsSDKToolsPath)" />
 	</Target>
 
+	<Target Name="ReportVsSDKVersion" AfterTargets="Build">
+		<ReportVsSDK />
+	</Target>
+
+	<UsingTask TaskName="ReportVsSDK" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+		<Task>
+			<Using Namespace="Microsoft.Build.Framework" />
+			<Using Namespace="System.Reflection" />
+			<Code Type="Fragment" Language="cs">
+				<![CDATA[
+			    var tasks =  AppDomain.CurrentDomain.GetAssemblies ().FirstOrDefault (asm => asm.GetName ().Name == "Microsoft.VsSDK.Build.Tasks");
+				if (tasks != null) 
+				{
+					Log.LogMessage(MessageImportance.High, "VSSDK: Microsoft.VsSDK.Build.Tasks, Version=" + 
+						((AssemblyFileVersionAttribute)tasks.GetCustomAttribute(typeof(AssemblyFileVersionAttribute))).Version);
+				}
+]]>
+			</Code>
+		</Task>
+	</UsingTask>
+
 	<PropertyGroup>
 		<!-- This makes it easy to change it to be $(TargetPath) instead -->
 		<SmartTemplateIntermediateOutputPath Condition="'$(SmartTemplateIntermediateOutputPath)' == ''">$(IntermediateOutputPath)</SmartTemplateIntermediateOutputPath>

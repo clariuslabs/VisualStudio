@@ -65,16 +65,17 @@
 		<!-- This makes it easy to change it to be $(TargetPath) instead -->
 		<SmartTemplateIntermediateOutputPath Condition="'$(SmartTemplateIntermediateOutputPath)' == ''">$(IntermediateOutputPath)</SmartTemplateIntermediateOutputPath>
 		<SmartTemplateIntermediateOutputFullPath>$([MSBuild]::Escape($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(SmartTemplateIntermediateOutputPath)'))'))))</SmartTemplateIntermediateOutputFullPath>
+		<ShouldProcessSmartTemplates Condition="$([System.IO.Path]::GetExtension('$(MSBuildProjectFile)')) == '.tmp_proj'">false</ShouldProcessSmartTemplates>
 
 		<!-- Before compilation is done, we add our content files from smart templates -->
-		<PrepareForBuildDependsOn>
+		<PrepareForBuildDependsOn Condition="'$(ShouldProcessSmartTemplates)' != 'false'">
 			$(PrepareForBuildDependsOn);
 			FindSmartTemplateCandidates;
 			IncludeSmartTemplateFiles;
 			IncludeSmartTemplateIncludes
 		</PrepareForBuildDependsOn>
 		<!-- Before extension is deployed or VSIX built, we zip templates -->
-		<AssignTargetPathsDependsOn>
+		<AssignTargetPathsDependsOn Condition="'$(ShouldProcessSmartTemplates)' != 'false'">
 			CopyOutOfDateSmartTemplateContent;
 			ZipSmartTemplateContent;
 			AddSmartTemplateZip;

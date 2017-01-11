@@ -32,7 +32,15 @@
       <dependency id="MSBuilder.CodeTaskAssembly" version="[0.2.4,)" />
     </dependencies>
     <releaseNotes>Release Notes:
-v1.1.*
+v1.1.
+* Updated for VS2017
+* Adds properties:
+	* Dev: simple version number from Visual Studio version, without the decimal (i.e. '15')
+* Adds DEV[n] defined constant for conditional code compilation (i.e. #if DEV15, to compile 
+  only when building for VS2017)
+
+
+v1.1.
 * Smarter and simpler template authoring. Just set BuildAction to None on all your 
   template content as well as the .vstemplate, and they become Smart Templates automatically:
 	* Supports &lt;Include&gt; metadata to add shared artifacts to the generated ZIP files

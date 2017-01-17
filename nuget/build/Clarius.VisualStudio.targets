@@ -37,6 +37,7 @@
 		</Task>
 	</UsingTask>
 	<Target Name="SetVsSDKEnv" Condition="'$(OverrideVsSDK)' != 'false'" BeforeTargets="GeneratePkgDef;VSCTCompile">
+		<Message Text="Setting VsSDKToolsPath to: '$(VsSDKToolsPath)'" Importance="high" />
 		<SetVsSDKEnv VsSDKToolsPath="$(VsSDKToolsPath)" />
 	</Target>
 

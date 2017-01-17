@@ -84,22 +84,21 @@
 		-->
 		<OverrideVsSDK Condition="'$(VSToolsPath)' != ''">false</OverrideVsSDK>
 	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
-		<!-- Reset properties from the VSSDK targets -->
-		<VSToolsPath Condition="'$(IsAppLocalIde)' != 'true'">$(ProgramFiles)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-		<VSToolsPath Condition="'$(IsAppLocalIde)' == 'true'">$(VsInstallRoot)\MSBuild\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
-		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
-		<VSSDKTargetsPath>$(VSToolsPath)\VSSDK</VSSDKTargetsPath>
-		<VsSDKInstall>$(VSToolsPath)\VSSDK</VsSDKInstall>
-		<VsSDKIncludes>$(VsSDKInstall)\Common\inc</VsSDKIncludes>
-		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
+  
+    <PropertyGroup Condition="'$(OverrideVsSDK)' != 'false'">
+	   <!-- Reset properties from the VSSDK targets -->
+       <VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
+       <VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
+       <VSToolsPath Condition="'$(IsAppLocalIde)' != 'true'">$(ProgramFiles)\Microsoft Visual Studio $(VisualStudioVersion)</VSToolsPath>
+       <VSToolsPath Condition="'$(IsAppLocalIde)' == 'true'">$(VsInstallRoot)</VSToolsPath>
+       <VSSDKTargetsPath>$([System.IO.Directory]::GetDirectories("$(VSToolsPath)", "VSSDK", SearchOption.AllDirectories)[0])</VSSDKTargetsPath>
+       <VsSDKInstall>$(VSSDKTargetsPath)</VsSDKInstall>
+       <VsSDKIncludes>$([System.IO.Directory]::GetDirectories("$(VsSDKInstall)", "Common", SearchOption.AllDirectories)[0])\inc</VsSDKIncludes>
+       <VsSDKToolsPath>$([System.IO.Directory]::GetDirectories("$(VsSDKInstall)", "Tools", SearchOption.AllDirectories)[0])\bin</VsSDKToolsPath>
 	</PropertyGroup>
 
 	<PropertyGroup>
 		<ClariusVisualStudioPropsImported>true</ClariusVisualStudioPropsImported>
 	</PropertyGroup>
-
 
 </Project>

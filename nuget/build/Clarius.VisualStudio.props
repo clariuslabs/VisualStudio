@@ -92,7 +92,7 @@
 		<VsSDKVersion>$(VisualStudioVersion)</VsSDKVersion>
 		<VSSDKTargetPlatformVersion>$(VisualStudioVersion)</VSSDKTargetPlatformVersion>
 		<VSSDKTargetsPath>$(VSToolsPath)\VSSDK</VSSDKTargetsPath>
-		<VsSDKInstall>$(VSToolsPath)\VSSDK</VsSDKInstall>
+		<VsSDKInstall>$(VSSDK)VisualStudioIntegration</VsSDKInstall>
 		<VsSDKIncludes>$(VsSDKInstall)\Common\inc</VsSDKIncludes>
 		<VsSDKToolsPath>$(VsSDKInstall)\Tools\bin</VsSDKToolsPath>
 	</PropertyGroup>

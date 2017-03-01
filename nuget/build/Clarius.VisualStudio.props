@@ -40,7 +40,7 @@
 	<PropertyGroup Condition="'$(DevEnvDir)' == ''">
 		<VSCommToolsVar>VS$(VisualStudioVersion.Replace('.', ''))COMNTOOLS</VSCommToolsVar>
 		<DevEnvDir Condition="'$(IsAppLocalIde)' != 'true'">$([System.Environment]::ExpandEnvironmentVariables('%$(VSCommToolsVar)%'))..\IDE\</DevEnvDir>
-		<DevEnvDir Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'Common7', 'IDE'))\</DevEnvDir>
+		<DevEnvDir Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot.TrimEnd('\'))', 'Common7', 'IDE'))\</DevEnvDir>
 		<DevEnvDir>$([System.IO.Path]::GetFullPath('$(DevEnvDir)'))</DevEnvDir>
 	</PropertyGroup>
 
@@ -48,7 +48,7 @@
 	<PropertyGroup Condition="'$(VSSDK)' == ''">
 		<VSSDKVar>VSSDK$(VisualStudioVersion.Replace('.', ''))Install</VSSDKVar>
 		<VSSDK Condition="'$(IsAppLocalIde)' != 'true'">$([System.Environment]::ExpandEnvironmentVariables('%$(VSSDKVar)%'))</VSSDK>
-		<VSSDK Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot)', 'VSSDK'))\</VSSDK>
+		<VSSDK Condition="'$(IsAppLocalIde)' == 'true'">$([System.IO.Path]::Combine('$(VsInstallRoot.TrimEnd('\'))', 'VSSDK'))\</VSSDK>
 	</PropertyGroup>
 	<PropertyGroup>
 		<VSSDK20>$(VSSDK)VisualStudioIntegration\Common\Assemblies\v2.0\</VSSDK20>
@@ -56,8 +56,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<PublicAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir)', 'PublicAssemblies'))\</PublicAssemblies>
-		<PrivateAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir)', 'PrivateAssemblies'))\</PrivateAssemblies>
+		<PublicAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir.TrimEnd('\'))', 'PublicAssemblies'))\</PublicAssemblies>
+		<PrivateAssemblies>$([System.IO.Path]::Combine('$(DevEnvDir.TrimEnd('\'))', 'PrivateAssemblies'))\</PrivateAssemblies>
 	</PropertyGroup>
 
 	<!-- Set startup process to always start with the experimental instance and logging enabled -->
